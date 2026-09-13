@@ -41,10 +41,11 @@ cp config/test_cases.example.json config/test_cases.json
 python src/app.py --all
 ```
 
-**Kỳ vọng Output màn hình:**
+**Kỳ vọng Output màn hình sau khi hoàn thiện bài Lab:**
 ```text
-✅ [MOCK OFFLINE MODE PASS]: Môi trường đã sẵn sàng! 
-📊 [KẾT QUẢ TEST SUITE]: 2 Đã chạy (TC01, TC02 mẫu) | 3 Đang chờ viết câu hỏi (TODO)
+🔌 LLM Provider: MockOfflineProvider
+📊 [KẾT QUẢ TEST SUITE]: Đã thực thi 5/5 Test Cases | 0 Test Cases đang chờ điền câu hỏi (TODO)
+📊 [OBSERVABILITY]: Đã lưu 10 sự kiện Waterfall Trace tại 'docs/trace_waterfall.json'!
 ```
 
 > 🔑 **QUY ĐỊNH BẮT BUỘC VỀ API KEY VÀ NỘP BÀI (SUBMISSION REQUIREMENT):**  

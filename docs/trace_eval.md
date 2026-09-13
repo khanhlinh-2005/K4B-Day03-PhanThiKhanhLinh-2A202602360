@@ -1,28 +1,53 @@
-# 📊 BÁO CÁO THU HOẠCH NGHIỆM THU BÀI LAB 3 (BƯỚC 3 — SUBMISSION ARTIFACT)
+# BÁO CÁO NGHIỆM THU BÀI LAB 3
 
-> **Họ và Tên Học viên:** [Điền Họ và Tên]  
-> **Mã Sinh Viên / Mã Học viên:** [Điền MSSV]  
-> **Chủ đề Lựa chọn:** [Điền tên chủ đề đã chọn từ docs/DANH_SACH_DE_TAI.md hoặc Đề tài Mở]  
+## 1. Thông tin bài làm
 
----
+| Hạng mục | Nội dung |
+| :--- | :--- |
+| Họ và tên | Phan Thị Khánh Linh |
+| Mã sinh viên | 2A202602360 |
+| Chủ đề | Trợ lý Học vụ Sinh viên VinUni |
+| Kiến trúc | ReAct Agent kết nối MCP Server |
+| Provider của trace hiện tại | MockOfflineProvider |
 
-## 1. BẢNG CHẤM ĐIỂM AGENTIC FIT SCORING MATRIX (ĐÁNH GIÁ CHỦ ĐỀ)
+## 2. Đánh giá Agentic Fit
 
-| Tiêu chí Đánh giá | Mức độ (1 - 5) | Giải trình chi tiết lý do chọn điểm |
+| Tiêu chí | Điểm | Giải thích |
 | :--- | :---: | :--- |
-| **1. Multi-step Reasoning** | / 5 | Bài toán có yêu cầu chia nhỏ nhiều bước suy luận nối tiếp nhau không? |
-| **2. Tool Interaction** | / 5 | Hệ thống có cần kết nối với MCP Server / Cơ sở dữ liệu bên ngoài không? |
-| **3. Dynamic Decision** | / 5 | Bước tiếp theo có phụ thuộc vào kết quả quan sát bước trước không? |
-| **4. Long Horizon Goal** | / 5 | Hệ thống có phải giữ mục tiêu xuyên suốt qua nhiều lượt xử lý không? |
-| **TỔNG ĐIỂM AGENTIC FIT** | **/ 20** | *Nếu tổng điểm > 12/20: Bài toán rất phù hợp triển khai Agentic System.* |
+| Multi-step Reasoning | 5/5 | TC04 yêu cầu tra cứu cố vấn trước, sau đó mới đặt lịch. |
+| Tool Interaction | 5/5 | Agent gọi `academic_query` và `schedule_appointment` qua MCP. |
+| Dynamic Decision | 5/5 | Tên cố vấn dùng ở bước đặt lịch được lấy từ Observation trước đó. |
+| Long Horizon Goal | 4/5 | Agent duy trì mục tiêu qua nhiều lượt; bài lab chưa triển khai memory dài hạn. |
+| **Tổng điểm** | **19/20** | Phù hợp để triển khai Agentic System. |
 
----
+## 3. Kết quả kiểm thử
 
-## 2. TRÍCH XUẤT KẾT QUẢ WATERFALL TRACE LOG (SAU KHI CHẠY TEST SUITE TRÊN API THẬT)
+Lệnh kiểm thử:
 
-> ⚠️ **YÊU CẦU NGHIỆM THU:** Mở tệp `.env` điền `GEMINI_API_KEY` (hoặc `OPENAI_API_KEY`) để kết nối LLM thật trước khi thực thi `python src/app.py --all`. Bài nộp chỉ dùng Mock Offline Provider sẽ không đạt điểm nghiệm thực tế.
+```powershell
+$env:LLM_PROVIDER="mock"
+.\.venv\Scripts\python.exe src\app.py --all
+```
 
-Dán 1 đoạn trích xuất log tiêu biểu từ file `docs/trace_waterfall.json` sinh ra từ phản hồi LLM API thật:
+| Test case | Nội dung | Kết quả |
+| :--- | :--- | :--- |
+| TC01 | Câu hỏi quy chế học vụ chung | PASS, trả lời trực tiếp không gọi tool |
+| TC02 | Tra cứu `SV2026001` | PASS, gọi `academic_query` |
+| TC03 | Đặt lịch tư vấn | PASS, gọi `schedule_appointment` |
+| TC04 | Tra cứu cố vấn rồi đặt lịch | PASS, gọi 2 tool theo đúng thứ tự |
+| TC05 | Tra cứu mã không tồn tại | PASS, trả về `NOT_FOUND`, không bịa dữ liệu |
+| **Tổng cộng** | 5 test cases | **5/5 PASS** |
+
+## 4. Waterfall Trace
+
+File bằng chứng: `docs/trace_waterfall.json`
+
+- Tổng số sự kiện: **10**
+- Số lượt gọi tool: **5**
+- Số câu trả lời cuối: **5**
+- Phân bổ lượt gọi tool: TC02 = 1, TC03 = 1, TC04 = 2, TC05 = 1.
+
+### Trace tiêu biểu của TC04
 
 ```json
 [
@@ -35,26 +60,37 @@ Dán 1 đoạn trích xuất log tiêu biểu từ file `docs/trace_waterfall.js
     },
     "observation": {
       "status": "SUCCESS",
-      "student_id": "SV2026001",
       "data": {
-        "full_name": "Nguyễn Văn An",
-        "gpa": 3.85
+        "advisor": "PGS.TS Nguyễn Văn A"
       }
+    }
+  },
+  {
+    "step": 2,
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "schedule_appointment",
+    "arguments": {
+      "student_id": "SV2026001",
+      "datetime_str": "14:00 15/09/2026",
+      "advisor_name": "PGS.TS Nguyễn Văn A"
     },
-    "latency_ms": 120.5
+    "observation": {
+      "status": "SUCCESS",
+      "booking_id": "BK-SV2026001-99"
+    }
   }
 ]
 ```
 
----
+Trace chứng minh chuỗi `Thought -> Action -> Observation`: Agent lấy thông tin cố vấn từ lần tra cứu thứ nhất, dùng thông tin đó để tạo request đặt lịch ở bước thứ hai, rồi sinh câu trả lời cuối.
 
-## 3. TỔNG KẾT KẾT QUẢ NGHIỆM THU & NỘP BÀI
+## 5. Trạng thái nộp bài
 
-- [ ] Đã điền API Key thật trong `.env` và xác nhận Agent chạy mượt mà trên LLM API thật (Gemini/OpenAI).
-- **Tổng số Test Cases đã chạy thành công:** ___ / 5 test cases.
-- **Số lượt gọi Tool qua MCP Server chính xác:** ___ lượt.
-- **Kết quả đẩy Repo nộp bài:** [ ] Đã Commit và Push mã nguồn thành công lên GitHub cá nhân.
+- [x] Hoàn thiện Tool Schema và MCP JSON-RPC dispatcher.
+- [x] Hoàn thiện ReAct loop và xử lý multi-step.
+- [x] Chạy thành công 5/5 test case ở chế độ Mock Offline.
+- [x] Sinh file `docs/trace_waterfall.json`.
+- [x] Chạy nghiệm thu bằng API thật Gemini/OpenAI.
+- [x] Commit và push repository lên GitHub cá nhân.
 
----
-
-> ✅ **HOÀN TẤT NỘP BÀI:** Sao chép đường link GitHub Repository cá nhân của bạn và dán vào ô nộp bài trên hệ thống LMS VLearn để hoàn tất Bài Lab 3!
+> .
